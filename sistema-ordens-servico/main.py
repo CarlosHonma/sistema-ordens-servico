@@ -1,5 +1,6 @@
 from app.models import Cliente, OrdemServico
-import app.services as services
+from app import services
+from app.database import carregar_dados
 
 def menu():
     print("\n=== Sistema de Ordens de Serviço ===")
@@ -9,6 +10,8 @@ def menu():
     print("0 - Sair")
 
 def main():
+    carregar_dados()  # 👈 carrega dados salvos
+
     while True:
         menu()
         opcao = input("Escolha uma opção: ")
