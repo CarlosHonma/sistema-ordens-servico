@@ -1,9 +1,9 @@
 import json
 import os
-from app.models import Cliente, OrdemServico
+from models import Cliente, OrdemServico
+from datetime import datetime
 
 ARQUIVO = "ordens.json"
-
 ordens_servico = []
 
 def salvar_dados():
@@ -23,10 +23,11 @@ def salvar_dados():
     with open(ARQUIVO, "w", encoding="utf-8") as f:
         json.dump(dados, f, indent=4, ensure_ascii=False)
 
-
 def carregar_dados():
     if not os.path.exists(ARQUIVO):
         return
+
+    ordens_servico.clear()
 
     with open(ARQUIVO, "r", encoding="utf-8") as f:
         dados = json.load(f)
@@ -39,8 +40,6 @@ def carregar_dados():
 
         ordem = OrdemServico(cliente, item["descricao"])
         ordem.status = item["status"]
-        ordem.data_criacao = ordem.data_criacao.fromisoformat(
-            item["data_criacao"]
-        )
+        ordem.data_criacao = datetime.fromisoformat(item["data_criacao"])
 
         ordens_servico.append(ordem)

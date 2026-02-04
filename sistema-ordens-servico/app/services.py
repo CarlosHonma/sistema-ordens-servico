@@ -1,7 +1,4 @@
-from app.database import (
-    ordens_servico,
-    salvar_dados
-)
+from database import ordens_servico, salvar_dados
 
 def criar_ordem(ordem):
     ordens_servico.append(ordem)
@@ -10,13 +7,13 @@ def criar_ordem(ordem):
 def listar_ordens():
     return ordens_servico
 
-def listar_por_status(status):
-    return [os for os in ordens_servico if os.status == status]
-
 def finalizar_ordem(indice):
+    if indice < 0 or indice >= len(ordens_servico):
+        return False, "Ordem não encontrada."
+
     try:
         ordens_servico[indice].finalizar()
         salvar_dados()
-        return True
-    except IndexError:
-        return False
+        return True, "Ordem finalizada com sucesso."
+    except ValueError as e:
+        return False, str(e)

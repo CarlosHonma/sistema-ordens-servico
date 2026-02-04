@@ -1,5 +1,5 @@
 from app.models import Cliente, OrdemServico
-from app import services
+import app.services as services
 from app.database import carregar_dados
 
 def menu():
@@ -10,22 +10,26 @@ def menu():
     print("0 - Sair")
 
 def main():
-    carregar_dados()  # 👈 carrega dados salvos
+    carregar_dados()
 
     while True:
         menu()
-        opcao = input("Escolha uma opção: ")
+        opcao = input("Escolha uma opção: ").strip()
 
         if opcao == "1":
-            nome = input("Nome do cliente: ")
-            telefone = input("Telefone: ")
-            descricao = input("Descrição do serviço: ")
+            try:
+                nome = input("Nome do cliente: ")
+                telefone = input("Telefone: ")
+                descricao = input("Descrição do serviço: ")
 
-            cliente = Cliente(nome, telefone)
-            ordem = OrdemServico(cliente, descricao)
-            services.criar_ordem(ordem)
+                cliente = Cliente(nome, telefone)
+                ordem = OrdemServico(cliente, descricao)
 
-            print("\n✅ Ordem criada com sucesso!")
+                services.criar_ordem(ordem)
+                print("\n✅ Ordem criada com sucesso!")
+
+            except ValueError as e:
+                print(f"\n❌ Erro: {e}")
 
         elif opcao == "2":
             ordens = services.listar_ordens()
@@ -38,11 +42,12 @@ def main():
                     print("-" * 30)
 
         elif opcao == "3":
-            indice = int(input("Informe o número da ordem: "))
-            if services.finalizar_ordem(indice):
-                print("\n✅ Ordem finalizada!")
-            else:
-                print("\n❌ Ordem não encontrada.")
+            try:
+                indice = int(input("Informe o número da ordem: "))
+                sucesso, mensagem = services.finalizar_ordem(indice)
+                print(f"\n{'✅' if sucesso else '❌'} {mensagem}")
+            except ValueError:
+                print("\n❌ Informe um número válido.")
 
         elif opcao == "0":
             print("\nSaindo do sistema...")
