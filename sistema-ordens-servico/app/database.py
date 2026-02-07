@@ -1,6 +1,6 @@
 import json
 import os
-from models import Cliente, OrdemServico
+from .models import Cliente, OrdemServico
 from datetime import datetime
 
 ARQUIVO = "ordens.json"

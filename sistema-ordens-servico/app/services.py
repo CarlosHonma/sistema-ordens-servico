@@ -1,4 +1,4 @@
-from database import ordens_servico, salvar_dados
+from .database import ordens_servico, salvar_dados
 
 def criar_ordem(ordem):
     ordens_servico.append(ordem)

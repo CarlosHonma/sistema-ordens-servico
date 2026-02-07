@@ -1,60 +1,83 @@
+import tkinter as tk
+from tkinter import messagebox
+
 from app.models import Cliente, OrdemServico
-import app.services as services
+from app import services
 from app.database import carregar_dados
 
-def menu():
-    print("\n=== Sistema de Ordens de Serviço ===")
-    print("1 - Criar ordem de serviço")
-    print("2 - Listar ordens")
-    print("3 - Finalizar ordem")
-    print("0 - Sair")
+# ---------- Funções ----------
+def criar_ordem():
+    nome = entry_nome.get()
+    telefone = entry_telefone.get()
+    descricao = entry_descricao.get()
 
-def main():
-    carregar_dados()
+    try:
+        cliente = Cliente(nome, telefone)
+        ordem = OrdemServico(cliente, descricao)
+        services.criar_ordem(ordem)
+        messagebox.showinfo("Sucesso", "Ordem criada com sucesso!")
+        limpar_campos()
+        atualizar_lista()
+    except ValueError as e:
+        messagebox.showerror("Erro", str(e))
 
-    while True:
-        menu()
-        opcao = input("Escolha uma opção: ").strip()
 
-        if opcao == "1":
-            try:
-                nome = input("Nome do cliente: ")
-                telefone = input("Telefone: ")
-                descricao = input("Descrição do serviço: ")
+def finalizar_ordem():
+    selecionado = listbox_ordens.curselection()
+    if not selecionado:
+        messagebox.showwarning("Aviso", "Selecione uma ordem.")
+        return
 
-                cliente = Cliente(nome, telefone)
-                ordem = OrdemServico(cliente, descricao)
+    indice = selecionado[0]
+    sucesso, mensagem = services.finalizar_ordem(indice)
+    if sucesso:
+        messagebox.showinfo("Sucesso", mensagem)
+        atualizar_lista()
+    else:
+        messagebox.showerror("Erro", mensagem)
 
-                services.criar_ordem(ordem)
-                print("\n✅ Ordem criada com sucesso!")
 
-            except ValueError as e:
-                print(f"\n❌ Erro: {e}")
+def atualizar_lista():
+    listbox_ordens.delete(0, tk.END)
+    for i, ordem in enumerate(services.listar_ordens()):
+        texto = f"{i} - {ordem.cliente.nome} | {ordem.status}"
+        listbox_ordens.insert(tk.END, texto)
 
-        elif opcao == "2":
-            ordens = services.listar_ordens()
-            if not ordens:
-                print("\nNenhuma ordem cadastrada.")
-            else:
-                for i, ordem in enumerate(ordens):
-                    print(f"\nOrdem #{i}")
-                    print(ordem)
-                    print("-" * 30)
 
-        elif opcao == "3":
-            try:
-                indice = int(input("Informe o número da ordem: "))
-                sucesso, mensagem = services.finalizar_ordem(indice)
-                print(f"\n{'✅' if sucesso else '❌'} {mensagem}")
-            except ValueError:
-                print("\n❌ Informe um número válido.")
+def limpar_campos():
+    entry_nome.delete(0, tk.END)
+    entry_telefone.delete(0, tk.END)
+    entry_descricao.delete(0, tk.END)
 
-        elif opcao == "0":
-            print("\nSaindo do sistema...")
-            break
+# ---------- Interface ----------
+carregar_dados()
 
-        else:
-            print("\n❌ Opção inválida.")
+janela = tk.Tk()
+janela.title("Sistema de Ordens de Serviço")
+janela.geometry("500x500")
 
-if __name__ == "__main__":
-    main()
+# Cadastro
+tk.Label(janela, text="Nome do Cliente").pack()
+entry_nome = tk.Entry(janela)
+entry_nome.pack(fill="x", padx=10)
+
+tk.Label(janela, text="Telefone").pack()
+entry_telefone = tk.Entry(janela)
+entry_telefone.pack(fill="x", padx=10)
+
+tk.Label(janela, text="Descrição do Serviço").pack()
+entry_descricao = tk.Entry(janela)
+entry_descricao.pack(fill="x", padx=10)
+
+tk.Button(janela, text="Criar Ordem", command=criar_ordem).pack(pady=10)
+
+# Lista
+tk.Label(janela, text="Ordens de Serviço").pack()
+listbox_ordens = tk.Listbox(janela)
+listbox_ordens.pack(fill="both", expand=True, padx=10, pady=5)
+
+tk.Button(janela, text="Finalizar Ordem", command=finalizar_ordem).pack(pady=10)
+
+atualizar_lista()
+
+janela.mainloop()
